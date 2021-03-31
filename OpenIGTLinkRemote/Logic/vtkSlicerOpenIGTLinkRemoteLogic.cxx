@@ -18,6 +18,8 @@ limitations under the License.
 // MRML includes
 #include <vtkMRMLScene.h>
 #include "vtkMRMLTextNode.h"
+#include <vtkMRMLLabelMapVolumeNode.h>
+#include <vtkSlicerVolumesLogic.h>
 
 // OpenIGTLinkIF MRML includes
 #include "vtkMRMLIGTLConnectorNode.h"
@@ -301,6 +303,31 @@ bool vtkSlicerOpenIGTLinkRemoteLogic::CancelCommand(igtlioCommand* command)
     }
   }
   return false;
+}
+
+vtkMRMLLabelMapVolumeNode* vtkSlicerOpenIGTLinkRemoteLogic::CreateNewLabelVolumeFromVolume(vtkMRMLScalarVolumeNode* imageNode)
+{
+  vtkSlicerVolumesLogic* logic = vtkSlicerVolumesLogic::SafeDownCast(this->GetModuleLogic("Volumes"));
+  vtkMRMLLabelMapVolumeNode* labelVolumeNode = vtkMRMLLabelMapVolumeNode::New();
+  
+  labelVolumeNode->SetHideFromEditors(imageNode->GetHideFromEditors());
+  labelVolumeNode->SetSaveWithScene(imageNode->GetSaveWithScene());
+  labelVolumeNode->SetSelectable(imageNode->GetSelectable());
+  labelVolumeNode->SetSingletonTag(imageNode->GetSingletonTag());
+  labelVolumeNode->SetDescription(imageNode->GetDescription());
+  std::vector< std::string > attributeNames = labelVolumeNode->GetAttributeNames();
+  for (std::vector< std::string >::iterator attributeNameIt = attributeNames.begin();
+    attributeNameIt != attributeNames.end(); ++attributeNameIt)
+    {
+    labelVolumeNode->SetAttribute(attributeNameIt->c_str(), imageNode->GetAttribute(attributeNameIt->c_str()));
+    }
+  labelVolumeNode->SetDescription(imageNode->GetDescription());
+  labelVolumeNode->SetName(imageNode->GetName());
+  this->GetMRMLScene()->AddNode(labelVolumeNode);
+  labelVolumeNode->Delete(); // node is now solely owned by the scene
+  logic->CreateLabelVolumeFromVolume(this->GetMRMLScene(),
+  vtkMRMLLabelMapVolumeNode::SafeDownCast(labelVolumeNode), imageNode);
+  return labelVolumeNode;
 }
 
 //----------------------------------------------------------------------------

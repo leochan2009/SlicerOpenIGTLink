@@ -15,6 +15,7 @@ LIST(APPEND ${KIT}_TARGET_LIBRARIES
   ${ITK_LIBRARIES}
   vtkSlicer${MODULE_NAME}ModuleMRML
   vtkSlicerOpenIGTLinkIFModuleLogic
+  vtkSlicerVolumesModuleLogic
   )
 
 if (Slicer_VERSION VERSION_LESS "4.11.0")

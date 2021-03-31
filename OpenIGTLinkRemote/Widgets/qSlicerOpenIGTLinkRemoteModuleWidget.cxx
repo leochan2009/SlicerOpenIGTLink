@@ -58,6 +58,7 @@ void qSlicerOpenIGTLinkRemoteModuleWidget::setup()
   d->setupUi(this);
 
   d->commandWidget->setCommandLogic(this->logic());
+  d->queryWidget->setQueryLogic(this->logic());
 
   this->Superclass::setup();
 }

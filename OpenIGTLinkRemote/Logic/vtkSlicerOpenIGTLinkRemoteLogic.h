@@ -31,6 +31,8 @@ class vtkMRMLIGTLQueryNode;
 class vtkSlicerOpenIGTLinkIFLogic;
 class igtlioCommand;
 class vtkSlicerOpenIGTLinkCommand;
+class vtkMRMLLabelMapVolumeNode;
+class vtkMRMLScalarVolumeNode;
 
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class VTK_SLICER_OPENIGTLINKREMOTE_MODULE_LOGIC_EXPORT vtkSlicerOpenIGTLinkRemoteLogic :
@@ -69,6 +71,9 @@ public:
   /// and sets the command state to cancelled.
   bool CancelCommand(igtlioCommand* command);
   bool CancelCommand(vtkSlicerOpenIGTLinkCommand* command);
+  
+  /// Create corresponding Label volume from the incoming ScalarVolume. The scalar volume was generated from image message
+  vtkMRMLLabelMapVolumeNode * CreateNewLabelVolumeFromVolume(vtkMRMLScalarVolumeNode* imagenode);
 
 protected:
   vtkSlicerOpenIGTLinkRemoteLogic();

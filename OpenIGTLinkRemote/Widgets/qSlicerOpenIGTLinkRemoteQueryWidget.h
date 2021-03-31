@@ -25,22 +25,24 @@
 
 class qSlicerOpenIGTLinkRemoteQueryWidgetPrivate;
 class QAbstractButton;
+class vtkSlicerOpenIGTLinkRemoteLogic;
 class vtkSlicerOpenIGTLinkIFLogic;
 class vtkMRMLNode;
 
 /// \ingroup Slicer_QtModules_IGTLRemote
 class Q_SLICER_QTMODULES_OPENIGTLINKREMOTE_WIDGETS_EXPORT qSlicerOpenIGTLinkRemoteQueryWidget :
-  public qSlicerWidget
+  public qSlicerAbstractModuleWidget
 {
   Q_OBJECT
 
 public:
-  typedef qSlicerWidget Superclass;
+  typedef qSlicerAbstractModuleWidget Superclass;
   qSlicerOpenIGTLinkRemoteQueryWidget(QWidget* parent = 0);
   virtual ~qSlicerOpenIGTLinkRemoteQueryWidget();
 
   void setMRMLScene(vtkMRMLScene* scene);
   void setIFLogic(vtkSlicerOpenIGTLinkIFLogic* ifLogic);
+  void setQueryLogic(vtkMRMLAbstractLogic* logic);
 
 public slots:
   void setConnectorNode(vtkMRMLNode* node);
@@ -69,7 +71,7 @@ protected:
 private:
   Q_DECLARE_PRIVATE(qSlicerOpenIGTLinkRemoteQueryWidget);
   Q_DISABLE_COPY(qSlicerOpenIGTLinkRemoteQueryWidget);
-
+  vtkSlicerOpenIGTLinkRemoteLogic* QueryLogic;
 };
 
 #endif

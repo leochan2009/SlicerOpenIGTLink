@@ -40,8 +40,8 @@
 #include "vtkMRMLLabelMapVolumeNode.h"
 #include "vtkMRMLScalarVolumeNode.h"
 #include "vtkMRMLNode.h"
-
 #include "vtkSmartPointer.h"
+#include "vtkSlicerOpenIGTLinkRemoteLogic.h"
 
 #include <map>
 
@@ -242,6 +242,27 @@ void qSlicerOpenIGTLinkRemoteQueryWidget::setIFLogic(vtkSlicerOpenIGTLinkIFLogic
   vtkNotUsed(ifLogic);
 }
 
+//------------------------------------------------------------------------------
+void qSlicerOpenIGTLinkRemoteQueryWidget::setQueryLogic(vtkMRMLAbstractLogic* logic)
+{
+  if (logic == NULL)
+  {
+    qWarning("Trying to set NULL as logic");
+    return;
+  }
+
+  this->QueryLogic = vtkSlicerOpenIGTLinkRemoteLogic::SafeDownCast(logic);
+  if (this->QueryLogic != NULL)
+  {
+    this->QueryLogic->Register(NULL);
+  }
+  else
+  {
+    qWarning("Logic is not an OpenIGTLinkRemoteLogic type!");
+  }
+}
+
+
 //-----------------------------------------------------------------------------
 void qSlicerOpenIGTLinkRemoteQueryWidget::setConnectorNode(vtkMRMLNode* node)
 {
@@ -379,20 +400,33 @@ void qSlicerOpenIGTLinkRemoteQueryWidget::onNewDeviceAdded(vtkObject* vtkNotUsed
   Q_D(qSlicerOpenIGTLinkRemoteQueryWidget);
   // change the node name to match the full descriptive name from the ImageMetaList or LabelMetaList
   vtkMRMLScalarVolumeNode* imageNode = vtkMRMLScalarVolumeNode::SafeDownCast((vtkObject*)deviceNode);
-  vtkMRMLLabelMapVolumeNode* labelNode = vtkMRMLLabelMapVolumeNode::SafeDownCast((vtkObject*)deviceNode);
+  //vtkMRMLLabelMapVolumeNode* labelNode = vtkMRMLLabelMapVolumeNode::SafeDownCast((vtkObject*)deviceNode);
   std::string name;
   if (imageNode)
   {
-    if (d->imageDeviceNameToNodeNameMap.find(imageNode->GetName()) != d->imageDeviceNameToNodeNameMap.end())
+    if (d->typeButtonGroup.checkedId() == qSlicerOpenIGTLinkRemoteQueryWidgetPrivate::TYPE_IMAGE)
     {
-      name = d->imageDeviceNameToNodeNameMap[imageNode->GetName()];
+      if (d->imageDeviceNameToNodeNameMap.find(imageNode->GetName()) != d->imageDeviceNameToNodeNameMap.end())
+      {
+        name = d->imageDeviceNameToNodeNameMap[imageNode->GetName()];
+      }
+      // Rename the node (give a unique name if the node is retrieved already)
+      if (imageNode->GetScene())
+      {
+        name = imageNode->GetScene()->GetUniqueNameByString(name.c_str());
+      }
+      imageNode->SetName(name.c_str());
     }
-  }
-  else if (labelNode)
-  {
-    if (d->labelDeviceNameToNodeNameMap.find(labelNode->GetName()) != d->labelDeviceNameToNodeNameMap.end())
+    else if (d->typeButtonGroup.checkedId() == qSlicerOpenIGTLinkRemoteQueryWidgetPrivate::TYPE_LABEL)
     {
-      name = d->labelDeviceNameToNodeNameMap[labelNode->GetName()];
+      if(d->labelDeviceNameToNodeNameMap.find(imageNode->GetName()) != d->labelDeviceNameToNodeNameMap.end())
+      {
+        name = d->labelDeviceNameToNodeNameMap[imageNode->GetName()];
+        name = imageNode->GetScene()->GetUniqueNameByString(name.c_str());
+        imageNode->SetName(name.c_str());
+        vtkMRMLLabelMapVolumeNode* labelVolumeNode = this->QueryLogic->CreateNewLabelVolumeFromVolume(imageNode);
+        imageNode->SetHideFromEditors(true);
+      }
     }
   }
   else
@@ -400,13 +434,6 @@ void qSlicerOpenIGTLinkRemoteQueryWidget::onNewDeviceAdded(vtkObject* vtkNotUsed
     // node metadata not found
     return;
   }
-
-  // Rename the node (give a unique name if the node is retrieved already)
-  if (imageNode->GetScene())
-  {
-    name = imageNode->GetScene()->GetUniqueNameByString(name.c_str());
-  }
-  imageNode->SetName(name.c_str());
 }
 
 //------------------------------------------------------------------------------
