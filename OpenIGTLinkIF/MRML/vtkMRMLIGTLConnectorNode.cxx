@@ -72,6 +72,7 @@ Version:   $Revision: 1.2 $
 #include <qSlicerLayoutManager.h>
 
 #define MRMLNodeNameKey "MRMLNodeName"
+#define OriginalNodeNameKey "OriginalNodeName"
 
 //------------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLIGTLConnectorNode);
@@ -714,7 +715,9 @@ vtkMRMLNode* vtkMRMLIGTLConnectorNode::vtkInternal::GetMRMLNodeForDevice(igtlioD
           break;
         }
       }
-      if (typeMatched && strcmp(node->GetName(), deviceName.c_str()) == 0)
+      //Node name can be modified by other module, it is not a concrete way to find the match to the device name
+      // OriginalNodeNameKey arrtribute was added during node creation.
+      if (typeMatched && strcmp(node->GetAttribute(OriginalNodeNameKey), deviceName.c_str()) == 0)
       {
         return node;
       }
@@ -1929,6 +1932,7 @@ bool vtkMRMLIGTLConnectorNode::RegisterIncomingMRMLNode(vtkMRMLNode* node, IGTLD
     this->AddAndObserveNodeReferenceID(this->GetIncomingNodeReferenceRole(), node->GetID());
     this->Modified();
   }
+  node->SetAttribute(OriginalNodeNameKey, node->GetName());
   return true;
 
 }
